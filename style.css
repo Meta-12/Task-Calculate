@@ -163,7 +163,7 @@ button:hover {
 
 .results {
   margin-top: 30px;
-  display: block;
+  display: none;
 }
 
 .results h2 {

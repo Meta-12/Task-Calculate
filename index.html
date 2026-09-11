@@ -5,157 +5,205 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>ខ្ជិលកែ PMP ណាស់</title>
-  <link rel="shortcut icon" href="image.png" type="image/x-icon">
+  <title>Task Performance Calculator</title>
 
+  <link rel="icon" href="image.png" type="image/x-icon" >
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <div class="container">
-      <div style="text-align: center; font-size: 50px; font-weight: bold;font-family:khmer os;">
-        ខ្ជិលកែ​ PMP ណាស់
+  <div class="container">
+
+    <!-- PROFILE -->
+    <div class="profile">
+      <img src="image.png" alt="Profile" class="profile-image">
+
+      <div class="profile-info">
+        <h2>MT Coding</h2>
+        <p>Task Reviewer</p>
       </div>
-
-    <div class="header">
-      <div class="header-icon">✓</div>
-
-      <h1>Task Calculator</h1>
-
-      <p class="subtitle">
-        Calculate your task performance and peer review time
-      </p>
     </div>
 
 
-    <!-- INPUT FORM -->
+    <!-- HEADER -->
+    <div class="header">
+
+      <div class="header-icon">
+        ✓
+      </div>
+
+      <h1 style="font-family: khmer OS Battambang ;">ខ្ជិលកែ PMP</h1>
+
+      <p class="subtitle">
+        Calculate task performance and peer review schedule
+      </p>
+
+    </div>
+
+
+    <!-- INPUT -->
+    <div class="section-title">
+      Work Information
+    </div>
 
     <div class="form-grid">
 
       <div class="input-group">
-        <label>Total (Tasks + Peer Review)</label>
-        <input
-          type="number"
-          id="totalTasks"
-          placeholder="100"
-          min="1"
-        >
+        <label>Work Start Time</label>
+        <input type="time" id="startTime" value="06:00">
+      </div>
+
+      <div class="input-group">
+        <label>Total Tasksm + Peer Review</label>
+        <input type="number" id="totalTasks" placeholder="100" min="1">
       </div>
 
       <div class="input-group">
         <label>Completed Tasks</label>
-        <input
-          type="number"
-          id="completedTasks"
-          placeholder="34"
-          min="0"
-        >
+        <input type="number" id="completedTasks" placeholder="34" min="0">
       </div>
 
       <div class="input-group">
         <label>Total Hours</label>
-        <input
-          type="number"
-          id="totalHours"
-          placeholder="8"
-          min="0"
-        >
+        <input type="number" id="totalHours" placeholder="8" min="0">
       </div>
 
       <div class="input-group">
         <label>Total Minutes</label>
-        <input
-          type="number"
-          id="totalMinutes"
-          placeholder="30"
-          min="0"
-          max="59"
-        >
+        <input type="number" id="totalMinutes" placeholder="30" min="0" max="59">
+      </div>
+
+      <div class="input-group">
+        <label>Break Time (Hours)</label>
+        <input type="number" id="breakHours" value="1" min="0" step="0.5">
       </div>
 
     </div>
 
 
+    <!-- BUTTON -->
     <button onclick="calculate()">
       Calculate Performance
     </button>
 
 
     <!-- RESULTS -->
-
     <div class="results" id="results">
 
-      <h2>📊 Results</h2>
+      <h2>📊 Performance Results</h2>
 
       <div class="result-grid">
 
+        <div class="result-card highlight">
+          <div class="result-label">Tasks Per Hour</div>
+          <div class="result-value" id="tasksPerHour">-</div>
+        </div>
+
+       <div class="result-card break">
+          <div class="result-label">Break Time</div>
+          <div class="result-value small" id="breakTimeResult">-</div>
+        </div>
+
+        <div class="result-card review">
+          <div class="result-label">Peer Review Tasks</div>
+          <div class="result-value" id="peerReviewTasks">-</div>
+        </div>
+        
+        <div class="result-card review">
+          <div class="result-label">Peer Review Duration</div>
+          <div class="result-value small" id="peerReviewTime">-</div>
+        </div>
+        
+        <div class="result-card task">
+          <div class="result-label">Task Duration</div>
+          <div class="result-value small" id="completedTime">-</div>
+        </div>
+
+
+        
+
          <div class="result-card">
-          <div class="result-label">
-            Total Available Time
-          </div>
-
-          <div class="result-value small" id="totalTime">
-            -
-          </div>
+          <div class="result-label">Completed Tasks</div>
+          <div class="result-value" id="completedResult">-</div>
         </div>
 
         <div class="result-card">
-          <div class="result-label">
-            Tasks Per Hour
-          </div>
-
-          <div class="result-value" id="tasksPerHour">
-            -
-          </div>
+          <div class="result-label">Total Work Time</div>
+          <div class="result-value small" id="totalTime">-</div>
         </div>
-
-
-        <div class="result-card">
-          <div class="result-label">
-            Completed Tasks
-          </div>
-
-          <div class="result-value" id="completedResult">
-            -
-          </div>
-        </div>
-
-
-        <div class="result-card">
-          <div class="result-label">
-            Peer Review Tasks
-          </div>
-
-          <div class="result-value" id="peerReviewTasks">
-            -
-          </div>
-        </div>
-
 
         <div class="result-card highlight">
-          <div class="result-label">
-            Completed Task Time
+          <div class="result-label">Total Day Duration</div>
+          <div class="result-value small" id="totalDayTime">-</div>
+        </div>
+
+      </div>
+
+
+      <!-- TIMELINE -->
+      <div class="timeline">
+
+        <h3>🕐 Work Timeline</h3>
+
+        <div class="timeline-item">
+
+          <div class="timeline-icon">🟢</div>
+
+          <div class="timeline-info">
+            <div class="timeline-name">Work Starts</div>
+            <div class="timeline-time" id="workStart">-</div>
           </div>
 
-          <div class="result-value small" id="completedTime">
-            -
-          </div>
         </div>
 
 
-        <div class="result-card highlight">
-          <div class="result-label">
-            Peer Review Time
+        <div class="timeline-item">
+
+          <div class="timeline-icon">📋</div>
+
+          <div class="timeline-info">
+            <div class="timeline-name">Task Period</div>
+            <div class="timeline-time" id="taskPeriod">-</div>
           </div>
 
-          <div class="result-value small" id="peerReviewTime">
-            -
-          </div>
         </div>
 
 
-       
+        <div class="timeline-item">
+
+          <div class="timeline-icon">🔍</div>
+
+          <div class="timeline-info">
+            <div class="timeline-name">Peer Review Period</div>
+            <div class="timeline-time" id="reviewPeriod">-</div>
+          </div>
+
+        </div>
+
+
+        <div class="timeline-item">
+
+          <div class="timeline-icon">☕</div>
+
+          <div class="timeline-info">
+            <div class="timeline-name">Break</div>
+            <div class="timeline-time" id="breakPeriod">-</div>
+          </div>
+
+        </div>
+
+
+        <div class="timeline-item">
+
+          <div class="timeline-icon">🏁</div>
+
+          <div class="timeline-info">
+            <div class="timeline-name">Work Day Ends</div>
+            <div class="timeline-time" id="workEnd">-</div>
+          </div>
+
+        </div>
 
       </div>
 
@@ -169,7 +217,7 @@
   </div>
 
 
-<script src="run.js"></script>
+  <script src="script.js"></script>
 
 </body>
 </html>

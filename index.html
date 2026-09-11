@@ -1,13 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Task Performance Calculator</title>
 
-  <link rel="icon" href="image.png" type="image/x-icon" >
+  <link rel="icon" href="image.png" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -55,7 +55,7 @@
       </div>
 
       <div class="input-group">
-        <label>Total Tasksm + Peer Review</label>
+        <label>Total Tasks + Peer Review</label>
         <input type="number" id="totalTasks" placeholder="100" min="1">
       </div>
 
@@ -88,7 +88,7 @@
     </button>
 
 
-    <!-- RESULTS -->
+    <!-- RESULTS -->`
     <div class="results" id="results">
 
       <h2>📊 Performance Results</h2>
@@ -100,7 +100,7 @@
           <div class="result-value" id="tasksPerHour">-</div>
         </div>
 
-       <div class="result-card break">
+        <div class="result-card break">
           <div class="result-label">Break Time</div>
           <div class="result-value small" id="breakTimeResult">-</div>
         </div>
@@ -109,26 +109,21 @@
           <div class="result-label">Peer Review Tasks</div>
           <div class="result-value" id="peerReviewTasks">-</div>
         </div>
-        
+
         <div class="result-card review">
           <div class="result-label">Peer Review Duration</div>
           <div class="result-value small" id="peerReviewTime">-</div>
         </div>
-        
+        <div class="result-card task">
+          <div class="result-label">Completed Tasks</div>
+          <div class="result-value" id="completedResult">-</div>
+        </div>
         <div class="result-card task">
           <div class="result-label">Task Duration</div>
           <div class="result-value small" id="completedTime">-</div>
         </div>
 
-
-        
-
-         <div class="result-card">
-          <div class="result-label">Completed Tasks</div>
-          <div class="result-value" id="completedResult">-</div>
-        </div>
-
-        <div class="result-card">
+        <div class="result-card highlight">
           <div class="result-label">Total Work Time</div>
           <div class="result-value small" id="totalTime">-</div>
         </div>
@@ -143,19 +138,6 @@
 
       <!-- TIMELINE -->
       <div class="timeline">
-
-        <h3>🕐 Work Timeline</h3>
-
-        <div class="timeline-item">
-
-          <div class="timeline-icon">🟢</div>
-
-          <div class="timeline-info">
-            <div class="timeline-name">Work Starts</div>
-            <div class="timeline-time" id="workStart">-</div>
-          </div>
-
-        </div>
 
 
         <div class="timeline-item">
@@ -193,6 +175,19 @@
 
         </div>
 
+        <h3>🕐 Work Timeline</h3>
+
+        <div class="timeline-item">
+
+          <div class="timeline-icon">🟢</div>
+
+          <div class="timeline-info">
+            <div class="timeline-name">Work Starts</div>
+            <div class="timeline-time" id="workStart">-</div>
+          </div>
+
+        </div>
+
 
         <div class="timeline-item">
 
@@ -220,5 +215,5 @@
   <script src="script.js"></script>
 
 </body>
-</html>
 
+</html>

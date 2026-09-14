@@ -1,3 +1,19 @@
+// ========================================
+// LOAD SAVED BREAK TIME
+// ========================================
+
+window.addEventListener("DOMContentLoaded", function () {
+  const savedBreakTime = localStorage.getItem("breakTime");
+
+  if (savedBreakTime !== null) {
+    document.getElementById("breakHours").value = savedBreakTime;
+  }
+});
+
+// ========================================
+// FORMAT DURATION
+// ========================================
+
 function formatDuration(decimalHours) {
   let hours = Math.floor(decimalHours);
 
@@ -11,8 +27,11 @@ function formatDuration(decimalHours) {
   return `${hours}h ${minutes}m`;
 }
 
+// ========================================
+// FORMAT TIME
+// ========================================
+
 function formatTime(totalMinutes) {
-  // Handle time going past midnight
   totalMinutes = totalMinutes % (24 * 60);
 
   let hours = Math.floor(totalMinutes / 60);
@@ -30,6 +49,10 @@ function formatTime(totalMinutes) {
   return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
 }
 
+// ========================================
+// CALCULATE
+// ========================================
+
 function calculate() {
   const totalTasks = Number(document.getElementById("totalTasks").value);
 
@@ -45,9 +68,9 @@ function calculate() {
 
   const startTime = document.getElementById("startTime").value;
 
-  // -------------------------
+  // ========================================
   // VALIDATION
-  // -------------------------
+  // ========================================
 
   if (
     totalTasks <= 0 ||
@@ -58,6 +81,7 @@ function calculate() {
     !startTime
   ) {
     alert("Please enter all information.");
+
     return;
   }
 
@@ -73,55 +97,61 @@ function calculate() {
     return;
   }
 
-  // -------------------------
+  // ========================================
+  // SAVE BREAK TIME
+  // ========================================
+
+  localStorage.setItem("breakTime", breakHours);
+
+  // ========================================
   // TOTAL PRODUCTIVE TIME
-  // -------------------------
+  // ========================================
 
   const totalTimeHours = totalHours + totalMinutes / 60;
 
-  // -------------------------
+  // ========================================
   // TASKS PER HOUR
-  // -------------------------
+  // ========================================
 
   const tasksPerHour = totalTasks / totalTimeHours;
 
-  // -------------------------
+  // ========================================
   // COMPLETED TASK TIME
-  // -------------------------
+  // ========================================
 
   const completedTimeHours = completedTasks / tasksPerHour;
 
-  // -------------------------
+  // ========================================
   // PEER REVIEW TASKS
-  // -------------------------
+  // ========================================
 
   const peerReviewTasks = totalTasks - completedTasks;
 
-  // -------------------------
+  // ========================================
   // PEER REVIEW TIME
-  // -------------------------
+  // ========================================
 
   const peerReviewTimeHours = peerReviewTasks / tasksPerHour;
 
-  // -------------------------
+  // ========================================
   // START TIME
-  // -------------------------
+  // ========================================
 
   const [startHour, startMinute] = startTime.split(":").map(Number);
 
   const startTotalMinutes = startHour * 60 + startMinute;
 
-  // -------------------------
+  // ========================================
   // TASK END
-  // -------------------------
+  // ========================================
 
   const taskDurationMinutes = completedTimeHours * 60;
 
   const taskEndMinutes = startTotalMinutes + taskDurationMinutes;
 
-  // -------------------------
+  // ========================================
   // PEER REVIEW
-  // -------------------------
+  // ========================================
 
   const peerReviewStartMinutes = taskEndMinutes;
 
@@ -130,11 +160,9 @@ function calculate() {
   const peerReviewEndMinutes =
     peerReviewStartMinutes + peerReviewDurationMinutes;
 
-  // -------------------------
+  // ========================================
   // BREAK
-  // -------------------------
-
-  // Break starts after peer review
+  // ========================================
 
   const breakStartMinutes = peerReviewEndMinutes;
 
@@ -142,15 +170,15 @@ function calculate() {
 
   const breakEndMinutes = breakStartMinutes + breakDurationMinutes;
 
-  // -------------------------
+  // ========================================
   // WORK DAY END
-  // -------------------------
+  // ========================================
 
   const workEndMinutes = breakEndMinutes;
 
-  // -------------------------
+  // ========================================
   // DISPLAY RESULTS
-  // -------------------------
+  // ========================================
 
   document.getElementById("tasksPerHour").textContent = tasksPerHour.toFixed(2);
 
@@ -175,9 +203,9 @@ function calculate() {
   document.getElementById("totalDayTime").textContent =
     formatDuration(totalDayHours);
 
-  // -------------------------
+  // ========================================
   // TIMELINE
-  // -------------------------
+  // ========================================
 
   document.getElementById("workStart").textContent =
     formatTime(startTotalMinutes);
@@ -193,9 +221,9 @@ function calculate() {
 
   document.getElementById("workEnd").textContent = formatTime(workEndMinutes);
 
-  // -------------------------
+  // ========================================
   // SHOW RESULTS
-  // -------------------------
+  // ========================================
 
   document.getElementById("results").style.display = "block";
 }

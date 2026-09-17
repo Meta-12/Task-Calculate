@@ -1,46 +1,79 @@
+
 // ========================================
-// LOAD SAVED BREAK TIME
+// LOAD SAVED VALUES
 // ========================================
 
 window.addEventListener("DOMContentLoaded", function () {
-  const savedBreakTime = localStorage.getItem("breakTime");
+
+  const savedBreakTime =
+    localStorage.getItem("breakTime");
 
   if (savedBreakTime !== null) {
-    document.getElementById("breakHours").value = savedBreakTime;
+
+    document.getElementById("breakHours").value =
+      savedBreakTime;
+
   }
+
+
+  const savedEndTime =
+    localStorage.getItem("endTime");
+
+  if (savedEndTime !== null) {
+
+    document.getElementById("endTime").value =
+      savedEndTime;
+
+  }
+
 });
+
 
 // ========================================
 // FORMAT DURATION
 // ========================================
 
 function formatDuration(decimalHours) {
-  let hours = Math.floor(decimalHours);
 
-  let minutes = Math.round((decimalHours - hours) * 60);
+  let hours =
+    Math.floor(decimalHours);
+
+  let minutes =
+    Math.round(
+      (decimalHours - hours) * 60
+    );
 
   if (minutes === 60) {
+
     hours++;
     minutes = 0;
+
   }
 
   return `${hours}h ${minutes}m`;
 }
+
 
 // ========================================
 // FORMAT TIME
 // ========================================
 
 function formatTime(totalMinutes) {
-  totalMinutes = totalMinutes % (24 * 60);
 
-  let hours = Math.floor(totalMinutes / 60);
+  totalMinutes =
+    totalMinutes % (24 * 60);
 
-  let minutes = Math.round(totalMinutes % 60);
+  let hours =
+    Math.floor(totalMinutes / 60);
 
-  let period = hours >= 12 ? "PM" : "AM";
+  let minutes =
+    Math.round(totalMinutes % 60);
 
-  let displayHours = hours % 12;
+  let period =
+    hours >= 12 ? "PM" : "AM";
+
+  let displayHours =
+    hours % 12;
 
   if (displayHours === 0) {
     displayHours = 12;
@@ -49,24 +82,63 @@ function formatTime(totalMinutes) {
   return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
 }
 
+
+// ========================================
+// CONVERT TIME TO MINUTES
+// ========================================
+
+function timeToMinutes(time) {
+
+  const [hours, minutes] =
+    time.split(":").map(Number);
+
+  return (hours * 60) + minutes;
+}
+
+
 // ========================================
 // CALCULATE
 // ========================================
 
 function calculate() {
-  const totalTasks = Number(document.getElementById("totalTasks").value);
 
-  const completedTasks = Number(
-    document.getElementById("completedTasks").value,
-  );
+  const totalTasks =
+    Number(
+      document.getElementById("totalTasks").value
+    );
 
-  const totalHours = Number(document.getElementById("totalHours").value);
 
-  const totalMinutes = Number(document.getElementById("totalMinutes").value);
+  const completedTasks =
+    Number(
+      document.getElementById("completedTasks").value
+    );
 
-  const breakHours = Number(document.getElementById("breakHours").value);
 
-  const startTime = document.getElementById("startTime").value;
+  const adhocTasks =
+    Number(
+      document.getElementById("adhocTasks").value
+    );
+
+
+  const breakHours =
+    Number(
+      document.getElementById("breakHours").value
+    );
+
+
+  const meetingMinutes =
+    Number(
+      document.getElementById("meetingMinutes").value
+    );
+
+
+  const startTime =
+    document.getElementById("startTime").value;
+
+
+  const endTime =
+    document.getElementById("endTime").value;
+
 
   // ========================================
   // VALIDATION
@@ -75,155 +147,423 @@ function calculate() {
   if (
     totalTasks <= 0 ||
     completedTasks < 0 ||
-    totalHours < 0 ||
-    totalMinutes < 0 ||
+    adhocTasks < 0 ||
     breakHours < 0 ||
-    !startTime
+    meetingMinutes < 0 ||
+    !startTime ||
+    !endTime
   ) {
-    alert("Please enter all information.");
+
+    alert("Please enter all required information.");
 
     return;
   }
 
-  if (completedTasks > totalTasks) {
-    alert("Completed tasks cannot be greater than total tasks.");
+
+  // ========================================
+  // CHECK TASK TOTAL
+  // ========================================
+
+  const usedTasks =
+    completedTasks +
+    adhocTasks;
+
+
+  if (usedTasks > totalTasks) {
+
+    alert(
+      "Main Tasks + Adhoc Tasks cannot be greater than Total Tasks."
+    );
 
     return;
   }
 
-  if (totalHours === 0 && totalMinutes === 0) {
-    alert("Please enter the total work time.");
-
-    return;
-  }
-
-  // ========================================
-  // SAVE BREAK TIME
-  // ========================================
-
-  localStorage.setItem("breakTime", breakHours);
-
-  // ========================================
-  // TOTAL PRODUCTIVE TIME
-  // ========================================
-
-  const totalTimeHours = totalHours + totalMinutes / 60;
-
-  // ========================================
-  // TASKS PER HOUR
-  // ========================================
-
-  const tasksPerHour = totalTasks / totalTimeHours;
-
-  // ========================================
-  // COMPLETED TASK TIME
-  // ========================================
-
-  const completedTimeHours = completedTasks / tasksPerHour;
-
-  // ========================================
-  // PEER REVIEW TASKS
-  // ========================================
-
-  const peerReviewTasks = totalTasks - completedTasks;
-
-  // ========================================
-  // PEER REVIEW TIME
-  // ========================================
-
-  const peerReviewTimeHours = peerReviewTasks / tasksPerHour;
-
-  // ========================================
-  // START TIME
-  // ========================================
-
-  const [startHour, startMinute] = startTime.split(":").map(Number);
-
-  const startTotalMinutes = startHour * 60 + startMinute;
-
-  // ========================================
-  // TASK END
-  // ========================================
-
-  const taskDurationMinutes = completedTimeHours * 60;
-
-  const taskEndMinutes = startTotalMinutes + taskDurationMinutes;
 
   // ========================================
   // PEER REVIEW
   // ========================================
 
-  const peerReviewStartMinutes = taskEndMinutes;
+  const peerReviewTasks =
+    totalTasks -
+    completedTasks -
+    adhocTasks;
 
-  const peerReviewDurationMinutes = peerReviewTimeHours * 60;
 
-  const peerReviewEndMinutes =
-    peerReviewStartMinutes + peerReviewDurationMinutes;
+  // ========================================
+  // WORK TIME
+  // ========================================
+
+  let startTotalMinutes =
+    timeToMinutes(startTime);
+
+
+  let endTotalMinutes =
+    timeToMinutes(endTime);
+
+
+  if (endTotalMinutes <= startTotalMinutes) {
+
+    endTotalMinutes += 24 * 60;
+
+  }
+
+
+  // ========================================
+  // TOTAL DAY TIME
+  // ========================================
+
+  const totalDayMinutes =
+    endTotalMinutes -
+    startTotalMinutes;
+
 
   // ========================================
   // BREAK
   // ========================================
 
-  const breakStartMinutes = peerReviewEndMinutes;
+  const breakMinutes =
+    breakHours * 60;
 
-  const breakDurationMinutes = breakHours * 60;
-
-  const breakEndMinutes = breakStartMinutes + breakDurationMinutes;
 
   // ========================================
-  // WORK DAY END
+  // PRODUCTIVE WORK TIME
+  //
+  // Example:
+  // 9h total
+  // - 1h break
+  // - 1h meeting
+  // = 7h productive
   // ========================================
 
-  const workEndMinutes = breakEndMinutes;
+  const productiveMinutes =
+    totalDayMinutes -
+    breakMinutes -
+    meetingMinutes;
+
+
+  if (productiveMinutes <= 0) {
+
+    alert(
+      "Break time + Meeting time cannot be greater than the total work period."
+    );
+
+    return;
+  }
+
+
+  const totalTimeHours =
+    productiveMinutes / 60;
+
 
   // ========================================
-  // DISPLAY RESULTS
+  // TASK RATE
   // ========================================
 
-  document.getElementById("tasksPerHour").textContent = tasksPerHour.toFixed(2);
+  const tasksPerHour =
+    totalTasks /
+    totalTimeHours;
 
-  document.getElementById("completedResult").textContent = completedTasks;
 
-  document.getElementById("peerReviewTasks").textContent = peerReviewTasks;
+  // ========================================
+  // TASK DURATIONS
+  // ========================================
 
-  document.getElementById("completedTime").textContent =
-    formatDuration(completedTimeHours);
+  const completedTimeHours =
+    completedTasks /
+    tasksPerHour;
 
-  document.getElementById("peerReviewTime").textContent =
-    formatDuration(peerReviewTimeHours);
 
-  document.getElementById("breakTimeResult").textContent =
-    formatDuration(breakHours);
+  const adhocTimeHours =
+    adhocTasks /
+    tasksPerHour;
 
-  document.getElementById("totalTime").textContent =
-    `${totalHours}h ${totalMinutes}m`;
 
-  const totalDayHours = totalTimeHours + breakHours;
+  const peerReviewTimeHours =
+    peerReviewTasks /
+    tasksPerHour;
 
-  document.getElementById("totalDayTime").textContent =
-    formatDuration(totalDayHours);
+
+  // ========================================
+  // SAVE SETTINGS
+  // ========================================
+
+  localStorage.setItem(
+    "breakTime",
+    breakHours
+  );
+
+
+  localStorage.setItem(
+    "endTime",
+    endTime
+  );
+
 
   // ========================================
   // TIMELINE
   // ========================================
 
-  document.getElementById("workStart").textContent =
-    formatTime(startTotalMinutes);
+  const taskDurationMinutes =
+    completedTimeHours * 60;
 
-  document.getElementById("taskPeriod").textContent =
-    `${formatTime(startTotalMinutes)} → ${formatTime(taskEndMinutes)}`;
 
-  document.getElementById("reviewPeriod").textContent =
-    `${formatTime(peerReviewStartMinutes)} → ${formatTime(peerReviewEndMinutes)}`;
+  const taskStartMinutes =
+    startTotalMinutes;
 
-  document.getElementById("breakPeriod").textContent =
+
+  const taskEndMinutes =
+    taskStartMinutes +
+    taskDurationMinutes;
+
+
+  const adhocStartMinutes =
+    taskEndMinutes;
+
+
+  const adhocDurationMinutes =
+    adhocTimeHours * 60;
+
+
+  const adhocEndMinutes =
+    adhocStartMinutes +
+    adhocDurationMinutes;
+
+
+  const reviewStartMinutes =
+    adhocEndMinutes;
+
+
+  const reviewDurationMinutes =
+    peerReviewTimeHours * 60;
+
+
+  const reviewEndMinutes =
+    reviewStartMinutes +
+    reviewDurationMinutes;
+
+
+  const meetingStartTimeline =
+    reviewEndMinutes;
+
+
+  const meetingEndTimeline =
+    meetingStartTimeline +
+    meetingMinutes;
+
+
+  const breakStartMinutes =
+    meetingEndTimeline;
+
+
+  const breakEndMinutes =
+    breakStartMinutes +
+    breakMinutes;
+
+
+  // ========================================
+  // RESULTS
+  // ========================================
+
+  document.getElementById(
+    "tasksPerHour"
+  ).textContent =
+    tasksPerHour.toFixed(2);
+
+
+  document.getElementById(
+    "completedResult"
+  ).textContent =
+    completedTasks;
+
+
+  document.getElementById(
+    "peerReviewTasks"
+  ).textContent =
+    peerReviewTasks;
+
+
+  document.getElementById(
+    "completedTime"
+  ).textContent =
+    formatDuration(
+      completedTimeHours
+    );
+
+
+  document.getElementById(
+    "peerReviewTime"
+  ).textContent =
+    formatDuration(
+      peerReviewTimeHours
+    );
+
+
+  document.getElementById(
+    "breakTimeResult"
+  ).textContent =
+    formatDuration(
+      breakHours
+    );
+
+
+  document.getElementById(
+    "totalTime"
+  ).textContent =
+    formatDuration(
+      totalTimeHours
+    );
+
+
+  document.getElementById(
+    "totalDayTime"
+  ).textContent =
+    formatDuration(
+      totalDayMinutes / 60
+    );
+
+
+  // ========================================
+  // SHOW / HIDE ADHOC
+  // ========================================
+
+  const adhocResultCard =
+    document.getElementById("adhocResultCard");
+
+  const adhocTimeCard =
+    document.getElementById("adhocTimeCard");
+
+  const adhocTimeline =
+    document.getElementById("adhocTimeline");
+
+
+  if (adhocTasks > 0) {
+
+    adhocResultCard.style.display = "block";
+
+    adhocTimeCard.style.display = "block";
+
+    adhocTimeline.style.display = "flex";
+
+
+    document.getElementById(
+      "adhocResult"
+    ).textContent =
+      adhocTasks;
+
+
+    document.getElementById(
+      "adhocTime"
+    ).textContent =
+      formatDuration(
+        adhocTimeHours
+      );
+
+  } else {
+
+    adhocResultCard.style.display = "none";
+
+    adhocTimeCard.style.display = "none";
+
+    adhocTimeline.style.display = "none";
+
+  }
+
+
+  // ========================================
+  // SHOW / HIDE MEETING
+  // ========================================
+
+  const meetingResultCard =
+    document.getElementById("meetingResultCard");
+
+  const meetingTimeline =
+    document.getElementById("meetingTimeline");
+
+
+  if (meetingMinutes > 0) {
+
+    meetingResultCard.style.display = "block";
+
+    meetingTimeline.style.display = "flex";
+
+
+    document.getElementById(
+      "meetingTimeResult"
+    ).textContent =
+      formatDuration(
+        meetingMinutes / 60
+      );
+
+
+    document.getElementById(
+      "meetingPeriod"
+    ).textContent =
+      `${formatTime(meetingStartTimeline)} → ${formatTime(meetingEndTimeline)}`;
+
+  } else {
+
+    meetingResultCard.style.display = "none";
+
+    meetingTimeline.style.display = "none";
+
+  }
+
+
+  // ========================================
+  // TIMELINE
+  // ========================================
+
+  document.getElementById(
+    "workStart"
+  ).textContent =
+    formatTime(
+      startTotalMinutes
+    );
+
+
+  document.getElementById(
+    "taskPeriod"
+  ).textContent =
+    `${formatTime(taskStartMinutes)} → ${formatTime(taskEndMinutes)}`;
+
+
+  if (adhocTasks > 0) {
+
+    document.getElementById(
+      "adhocPeriod"
+    ).textContent =
+      `${formatTime(adhocStartMinutes)} → ${formatTime(adhocEndMinutes)}`;
+
+  }
+
+
+  document.getElementById(
+    "reviewPeriod"
+  ).textContent =
+    `${formatTime(reviewStartMinutes)} → ${formatTime(reviewEndMinutes)}`;
+
+
+  document.getElementById(
+    "breakPeriod"
+  ).textContent =
     `${formatTime(breakStartMinutes)} → ${formatTime(breakEndMinutes)}`;
 
-  document.getElementById("workEnd").textContent = formatTime(workEndMinutes);
+
+  document.getElementById(
+    "workEnd"
+  ).textContent =
+    formatTime(
+      endTotalMinutes
+    );
+
 
   // ========================================
   // SHOW RESULTS
   // ========================================
 
-  document.getElementById("results").style.display = "block";
+  document.getElementById(
+    "results"
+  ).style.display =
+    "block";
 }
+

@@ -1,591 +1,1078 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Performance Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --navy-1: #070a1f;
+  --navy-2: #0e1640;
+  --blue-1: #1a2f8f;
+  --blue-2: #2f5fdc;
+  --cyan: #38bdf8;
+  --cyan-2: #7dd3fc;
+  --white: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --border: #e6e9f0;
+  --surface: #ffffff;
+  --paper: #f7f8fb;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --ease: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --font: "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 
-  <title>Task Performance Calculator</title>
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #05070f;
+  --surface: #0d1120;
+  --ink: #e7ebf3;
+  --muted: #8891a5;
+  --border: #1d2438;
+}
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="shortcut icon" href="image.png" type="image/x-icon">
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #05070f;
+    --surface: #0d1120;
+    --ink: #e7ebf3;
+    --muted: #8891a5;
+    --border: #1d2438;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  position: relative;
+  overflow-x: hidden;
+  background: radial-gradient(circle at 20% 10%, var(--blue-1), transparent 55%),
+              linear-gradient(180deg, var(--navy-1) 0%, var(--blue-1) 40%, var(--blue-2) 75%, var(--navy-2) 100%);
+  background-attachment: fixed;
+}
+
+:root[data-theme="light"] body {
+  background: radial-gradient(circle at 20% 10%, var(--blue-1), transparent 55%),
+              linear-gradient(180deg, var(--navy-1) 0%, var(--blue-1) 30%, var(--blue-2) 55%, #cfe4ff 100%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.3;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.55) 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1.5px);
+  background-size: 90px 90px, 140px 140px;
+  background-position: 0 0, 40px 60px;
+  animation: panNet 40s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes growBar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes panNet {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 400px 260px, -300px 200px; }
+}
+
+@keyframes pulseLogo {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45); }
+  50% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+}
+
+/* ============ HERO ============ */
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: 28px 24px 90px;
+  color: var(--white);
+}
+
+.hero-topbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 640px;
+  margin: 0 auto 56px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulseLogo 3s ease-in-out infinite;
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.role-badge {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.85);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-toggle {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--ease), transform var(--ease), border-color var(--ease);
+}
+
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.45);
+  transform: translateY(-1px);
+}
+
+.hero-center {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto;
+  animation: riseIn 0.6s var(--ease) both;
+}
+
+.mascot {
+  width: 120px;
+  margin: 0 auto 6px;
+  animation: mascotFloat 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.25));
+}
+
+@keyframes mascotFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-2deg); }
+}
+
+.hero-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 26px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 34px rgba(47, 95, 220, 0.5);
+}
+
+.hero-center h1 {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0;
+  line-height: 1.08;
+}
+
+.hero-center h1 .grad {
+  background: linear-gradient(120deg, var(--cyan), var(--cyan-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-subtitle {
+  margin: 16px 0 0;
+  color: rgba(255,255,255,0.72);
+  font-size: 16px;
+}
+
+.tag-row {
+  margin-top: 26px;
+  display: flex;
+  justify-content: center;
+  gap: 10px 18px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.tag-row span {
+  color: rgba(255,255,255,0.55);
+}
+
+.tag-row span.hl {
+  color: var(--cyan-2);
+  font-weight: 600;
+}
+
+/* ============ FORM SECTION ============ */
+.section-form {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+  margin: -60px auto 0;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,0.5);
+  padding: 40px;
+  box-shadow: 0 30px 70px rgba(6, 12, 40, 0.35);
+  animation: riseIn 0.6s var(--ease) both 0.1s;
+}
+
+:root[data-theme="dark"] .section-form {
+  background: rgba(13, 17, 32, 0.85);
+  border-color: rgba(255,255,255,0.08);
+}
+
+.eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blue-2);
+  margin-bottom: 10px;
+}
+
+.section-form h2.heading {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+
+.section-form h2.heading .grad {
+  background: linear-gradient(120deg, var(--blue-2), var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.section-form > p {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin: 0 0 28px;
+  max-width: 50ch;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  margin-bottom: 7px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.input-group input {
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: var(--font-mono);
+  background: var(--paper);
+  color: var(--ink);
+  transition: border-color var(--ease), box-shadow var(--ease);
+}
+
+.input-group input:hover { border-color: #c7cee0; }
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--blue-2);
+  box-shadow: 0 0 0 4px rgba(47, 95, 220, 0.14);
+}
+
+/* make sure the native time-picker clock icon is always visible and easy to hit */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0.85;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 4px;
+  border-radius: 6px;
+  transition: opacity var(--ease), background var(--ease);
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background: rgba(47, 95, 220, 0.1);
+}
+
+:root[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.5);
+  }
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+button {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: transform var(--ease), box-shadow var(--ease), background var(--ease);
+}
+
+button.primary {
+  flex: 1;
+  background: linear-gradient(120deg, var(--blue-2), var(--cyan));
+  color: #06122b;
+  box-shadow: 0 10px 26px rgba(47, 95, 220, 0.32);
+}
+
+button.primary:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(47, 95, 220, 0.4); }
+button.primary:active { transform: translateY(0); }
+
+button.ghost {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+}
+
+button.ghost:hover { border-color: var(--blue-2); color: var(--blue-2); }
+
+/* ============ RESULTS (dark) ============ */
+.results {
+  display: none;
+  max-width: 640px;
+  margin: 28px auto 60px;
+}
+
+.results.show { display: block; animation: riseIn 0.5s var(--ease) both; }
+
+.section-dark {
+  background: linear-gradient(165deg, var(--navy-2), var(--navy-1));
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  color: var(--white);
+}
+
+.section-dark h2.heading {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.section-dark h2.heading .grad {
+  background: linear-gradient(120deg, var(--cyan), var(--cyan-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-stat {
+  margin: 22px 0 20px;
+}
+
+.hero-stat .result-label {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 4px;
+}
+
+.hero-stat .result-value {
+  font-family: var(--font-mono);
+  font-size: 42px;
+  font-weight: 600;
+  color: var(--cyan-2);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.day-bar {
+  display: flex;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.1);
+  margin-bottom: 26px;
+}
+
+.day-bar span {
+  height: 100%;
+  transform-origin: left;
+  animation: growBar 0.6s var(--ease) both;
+  transition: width 0.4s var(--ease);
+}
+
+#barTask { background: #38bdf8; }
+#barAdhoc { background: #a78bfa; }
+#barReview { background: #fbbf24; }
+#barMeeting { background: #60a5fa; }
+#barBreak { background: #fb7185; }
+
+.check-list { display: flex; flex-direction: column; }
+
+.result-card {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.check-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-icon svg { width: 11px; height: 11px; }
+
+.result-label {
+  font-size: 14px;
+  color: rgba(255,255,255,0.88);
+  font-weight: 500;
+}
+
+.result-value {
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--cyan-2);
+  text-align: right;
+}
+
+.hero-stat.result-card {
+  display: block;
+  border-bottom: none;
+  padding: 0;
+}
+
+/* ============ TIMELINE ============ */
+.timeline { margin-top: 30px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+.timeline h3 {
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.timeline-icon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+}
+
+.timeline-name {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.85);
+}
+
+.timeline-time {
+  margin: 0;
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.footer {
+  text-align: center;
+  padding: 30px 0 50px;
+  color: var(--muted);
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+@media (max-width: 650px) {
+  .section-form, .results, .hero-topbar { max-width: 92%; }
+  .form-grid { grid-template-columns: 1fr; }
+  .hero-center h1 { font-size: 32px; }
+  .section-form { padding: 28px 22px; }
+  .section-dark { padding: 28px 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
 </head>
 
 <body>
 
-  <div class="container">
+<div class="hero">
 
-    <!-- PROFILE -->
-    <div class="profile">
+  <div class="hero-topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="4" fill="white"/>
+        </svg>
+      </div>
+      <span class="brand-name">MT Coding</span>
+    </div>
+    <div class="topbar-right">
+      <span class="role-badge">Task Reviewer</span>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light and dark mode" title="Toggle light and dark mode">
+        <svg id="iconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg id="iconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+          <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 
-      <img
-        src="image.png"
-        alt="Profile"
-        class="profile-image"
-      >
+  <div class="hero-center">
+    <div class="mascot" aria-hidden="true">
+      <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="mascotBody" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7dd3fc"/>
+            <stop offset="100%" stop-color="#2f5fdc"/>
+          </linearGradient>
+        </defs>
+        <!-- floating sparkles -->
+        <g opacity="0.85">
+          <path d="M14 20l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#7dd3fc"/>
+          <path d="M104 78l1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4 3.4-1.4z" fill="#cffafe"/>
+        </g>
+        <!-- ears -->
+        <circle cx="34" cy="38" r="7" fill="url(#mascotBody)"/>
+        <circle cx="86" cy="38" r="7" fill="url(#mascotBody)"/>
+        <!-- head -->
+        <circle cx="60" cy="54" r="34" fill="url(#mascotBody)"/>
+        <!-- cheeks -->
+        <ellipse cx="42" cy="62" rx="6" ry="4" fill="#ffffff" opacity="0.35"/>
+        <ellipse cx="78" cy="62" rx="6" ry="4" fill="#ffffff" opacity="0.35"/>
+        <!-- eyes -->
+        <circle cx="49" cy="52" r="4.4" fill="#0b1330"/>
+        <circle cx="71" cy="52" r="4.4" fill="#0b1330"/>
+        <circle cx="50.5" cy="50.3" r="1.3" fill="#ffffff"/>
+        <circle cx="72.5" cy="50.3" r="1.3" fill="#ffffff"/>
+        <!-- smile -->
+        <path d="M52 63c3 3 13 3 16 0" stroke="#0b1330" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <!-- little checklist held up -->
+        <g transform="translate(78,68) rotate(12)">
+          <rect x="0" y="0" width="20" height="24" rx="3" fill="#ffffff"/>
+          <rect x="0" y="0" width="20" height="24" rx="3" fill="none" stroke="#bfe3fb" stroke-width="1.5"/>
+          <path d="M4 7l2.4 2.4L11 5" stroke="#2f5fdc" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <rect x="4" y="13" width="12" height="1.6" rx="0.8" fill="#dbeafe"/>
+          <path d="M4 19l2.4 2.4L11 17" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1>Task <span class="grad">Performance</span></h1>
+    <p class="hero-subtitle">See your pace and how the workday breaks down, in seconds.</p>
+    <div class="tag-row">
+      <span><span class="hl">Main</span> tasks</span>
+      <span>·</span>
+      <span><span class="hl">Adhoc</span> work</span>
+      <span>·</span>
+      <span><span class="hl">Peer</span> review</span>
+      <span>·</span>
+      <span><span class="hl">Meetings</span> &amp; breaks</span>
+    </div>
+  </div>
 
-      <div class="profile-info">
-        <h2>MT Coding</h2>
-        <p>Task Reviewer</p>
+</div>
+
+<div class="section-form">
+
+  <span class="eyebrow">Work information</span>
+  <h2 class="heading">Tell us about your <span class="grad">day</span></h2>
+  <p>Enter your schedule and task counts below — we'll work out your pace and lay out the full timeline.</p>
+
+  <div class="form-grid">
+    <div class="input-group">
+      <label>Work start time</label>
+      <input type="time" id="startTime" value="06:00">
+    </div>
+    <div class="input-group">
+      <label>Work end time</label>
+      <input type="time" id="endTime" value="15:00">
+    </div>
+    <div class="input-group">
+      <label>Total tasks</label>
+      <input type="number" id="totalTasks" placeholder="100" min="1">
+    </div>
+    <div class="input-group">
+      <label>Main tasks</label>
+      <input type="number" id="completedTasks" placeholder="34" min="0">
+    </div>
+    <div class="input-group">
+      <label>Adhoc tasks</label>
+      <input type="number" id="adhocTasks" placeholder="0" min="0" value="0">
+    </div>
+    <div class="input-group">
+      <label>Break time (hours)</label>
+      <input type="number" id="breakHours" value="1" min="0" step="0.5">
+    </div>
+    <div class="input-group">
+      <label>Meeting time (minutes)</label>
+      <input type="number" id="meetingMinutes" placeholder="0" min="0" value="0">
+    </div>
+  </div>
+
+  <div class="button-row">
+    <button class="primary" onclick="calculate()">Calculate performance</button>
+    <button class="ghost" onclick="resetForm()">Reset</button>
+  </div>
+
+</div>
+
+<div class="results" id="results">
+  <div class="section-dark">
+
+    <span class="eyebrow" style="color: var(--cyan-2);">Results</span>
+    <h2 class="heading">Your <span class="grad">breakdown</span></h2>
+
+    <div class="hero-stat result-card">
+      <div class="result-label">Tasks per hour</div>
+      <div class="result-value" id="tasksPerHour">-</div>
+    </div>
+
+    <div class="day-bar">
+      <span id="barTask"></span>
+      <span id="barAdhoc"></span>
+      <span id="barReview"></span>
+      <span id="barMeeting"></span>
+      <span id="barBreak"></span>
+    </div>
+
+    <div class="check-list">
+
+      <div class="result-card">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Main tasks</div>
+        <div class="result-value" id="completedResult">-</div>
+      </div>
+      <div class="result-card">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Main task duration</div>
+        <div class="result-value" id="completedTime">-</div>
+      </div>
+
+      <div class="result-card" id="adhocResultCard" style="display: none;">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Adhoc tasks</div>
+        <div class="result-value" id="adhocResult">-</div>
+      </div>
+      <div class="result-card" id="adhocTimeCard" style="display: none;">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Adhoc duration</div>
+        <div class="result-value" id="adhocTime">-</div>
+      </div>
+
+      <div class="result-card">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Peer review tasks</div>
+        <div class="result-value" id="peerReviewTasks">-</div>
+      </div>
+      <div class="result-card">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Peer review duration</div>
+        <div class="result-value" id="peerReviewTime">-</div>
+      </div>
+
+      <div class="result-card" id="meetingResultCard" style="display: none;">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Meeting time</div>
+        <div class="result-value" id="meetingTimeResult">-</div>
+      </div>
+
+      <div class="result-card">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Break time</div>
+        <div class="result-value" id="breakTimeResult">-</div>
+      </div>
+
+      <div class="result-card">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Total day duration</div>
+        <div class="result-value" id="totalDayTime">-</div>
+      </div>
+
+      <div class="result-card">
+        <div class="check-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="result-label">Productive work time</div>
+        <div class="result-value" id="totalTime">-</div>
       </div>
 
     </div>
 
+    <div class="timeline">
+      <h3>Work timeline</h3>
 
-    <!-- HEADER -->
-    <div class="header">
-
-      <div class="header-icon">
-        ✓
+      <div class="timeline-item">
+        <div class="timeline-icon"></div>
+        <div class="timeline-name">Work starts</div>
+        <div class="timeline-time" id="workStart">-</div>
       </div>
 
-      <h1>Task Performance</h1>
-
-      <p class="subtitle">
-        Calculate task performance and work schedule
-      </p>
-
-    </div>
-
-
-    <!-- INPUT -->
-    <div class="section-title">
-      Work Information
-    </div>
-
-
-    <div class="form-grid">
-
-      <!-- START TIME -->
-      <div class="input-group">
-
-        <label>Work Start Time</label>
-
-        <input
-          type="time"
-          id="startTime"
-          value="06:00"
-        >
-
+      <div class="timeline-item">
+        <div class="timeline-icon"></div>
+        <div class="timeline-name">Main task period</div>
+        <div class="timeline-time" id="taskPeriod">-</div>
       </div>
 
-
-      <!-- END TIME -->
-      <div class="input-group">
-
-        <label>Work End Time</label>
-
-        <input
-          type="time"
-          id="endTime"
-          value="15:00"
-        >
-
+      <div class="timeline-item" id="adhocTimeline" style="display: none;">
+        <div class="timeline-icon"></div>
+        <div class="timeline-name">Adhoc task period</div>
+        <div class="timeline-time" id="adhocPeriod">-</div>
       </div>
 
-
-      <!-- TOTAL TASKS -->
-      <div class="input-group">
-
-        <label>Total Tasks</label>
-
-        <input
-          type="number"
-          id="totalTasks"
-          placeholder="100"
-          min="1"
-        >
-
+      <div class="timeline-item">
+        <div class="timeline-icon"></div>
+        <div class="timeline-name">Peer review period</div>
+        <div class="timeline-time" id="reviewPeriod">-</div>
       </div>
 
-
-      <!-- MAIN TASKS -->
-      <div class="input-group">
-
-        <label>Main Tasks</label>
-
-        <input
-          type="number"
-          id="completedTasks"
-          placeholder="34"
-          min="0"
-        >
-
+      <div class="timeline-item" id="meetingTimeline" style="display: none;">
+        <div class="timeline-icon"></div>
+        <div class="timeline-name">Meeting</div>
+        <div class="timeline-time" id="meetingPeriod">-</div>
       </div>
 
-
-      <!-- ADHOC TASKS -->
-      <div class="input-group">
-
-        <label>Adhoc Tasks</label>
-
-        <input
-          type="number"
-          id="adhocTasks"
-          placeholder="0"
-          min="0"
-          value="0"
-        >
-
+      <div class="timeline-item">
+        <div class="timeline-icon"></div>
+        <div class="timeline-name">Break</div>
+        <div class="timeline-time" id="breakPeriod">-</div>
       </div>
 
-
-      <!-- BREAK -->
-      <div class="input-group">
-
-        <label>Break Time (Hours)</label>
-
-        <input
-          type="number"
-          id="breakHours"
-          value="1"
-          min="0"
-          step="0.5"
-        >
-
+      <div class="timeline-item">
+        <div class="timeline-icon"></div>
+        <div class="timeline-name">Work day ends</div>
+        <div class="timeline-time" id="workEnd">-</div>
       </div>
 
-
-      <!-- MEETING -->
-      <div class="input-group">
-
-        <label>Meeting Time (Minutes)</label>
-
-        <input
-          type="number"
-          id="meetingMinutes"
-          placeholder="0"
-          min="0"
-          value="0"
-        >
-
-      </div>
-
-    </div>
-
-
-    <!-- BUTTON -->
-    <button onclick="calculate()">
-      Calculate Performance
-    </button>
-
-
-    <!-- RESULTS -->
-    <div
-      class="results"
-      id="results"
-    >
-
-      <h2>
-        📊 Performance Results
-      </h2>
-
-
-      <div class="result-grid">
-
-
-        <!-- TASKS PER HOUR -->
-        <div class="result-card highlight">
-
-          <div class="result-label">
-            Tasks Per Hour
-          </div>
-
-          <div
-            class="result-value"
-            id="tasksPerHour"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- PRODUCTIVE TIME -->
-        <div class="result-card">
-
-          <div class="result-label">
-            Productive Work Time
-          </div>
-
-          <div
-            class="result-value small"
-            id="totalTime"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- MAIN TASK -->
-        <div class="result-card task">
-
-          <div class="result-label">
-            Main Tasks
-          </div>
-
-          <div
-            class="result-value"
-            id="completedResult"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- MAIN TASK TIME -->
-        <div class="result-card task">
-
-          <div class="result-label">
-            Main Task Duration
-          </div>
-
-          <div
-            class="result-value small"
-            id="completedTime"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- ADHOC -->
-        <div
-          class="result-card adhoc"
-          id="adhocResultCard"
-        >
-
-          <div class="result-label">
-            Adhoc Tasks
-          </div>
-
-          <div
-            class="result-value"
-            id="adhocResult"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- ADHOC TIME -->
-        <div
-          class="result-card adhoc"
-          id="adhocTimeCard"
-        >
-
-          <div class="result-label">
-            Adhoc Duration
-          </div>
-
-          <div
-            class="result-value small"
-            id="adhocTime"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- PEER REVIEW -->
-        <div class="result-card review">
-
-          <div class="result-label">
-            Peer Review Tasks
-          </div>
-
-          <div
-            class="result-value"
-            id="peerReviewTasks"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- PEER REVIEW TIME -->
-        <div class="result-card review">
-
-          <div class="result-label">
-            Peer Review Duration
-          </div>
-
-          <div
-            class="result-value small"
-            id="peerReviewTime"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- BREAK -->
-        <div class="result-card break">
-
-          <div class="result-label">
-            Break Time
-          </div>
-
-          <div
-            class="result-value small"
-            id="breakTimeResult"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- MEETING -->
-        <div
-          class="result-card meeting"
-          id="meetingResultCard"
-        >
-
-          <div class="result-label">
-            Meeting Time
-          </div>
-
-          <div
-            class="result-value small"
-            id="meetingTimeResult"
-          >
-            -
-          </div>
-
-        </div>
-
-
-        <!-- TOTAL DAY -->
-        <div class="result-card highlight">
-
-          <div class="result-label">
-            Total Day Duration
-          </div>
-
-          <div
-            class="result-value small"
-            id="totalDayTime"
-          >
-            -
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- TIMELINE -->
-      <div class="timeline">
-
-        <h3>
-          🕐 Work Timeline
-        </h3>
-
-
-        <!-- START -->
-        <div class="timeline-item">
-
-          <div class="timeline-icon">
-            🟢
-          </div>
-
-          <div class="timeline-info">
-
-            <div class="timeline-name">
-              Work Starts
-            </div>
-
-            <div
-              class="timeline-time"
-              id="workStart"
-            >
-              -
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- MAIN TASK -->
-        <div class="timeline-item">
-
-          <div class="timeline-icon">
-            📋
-          </div>
-
-          <div class="timeline-info">
-
-            <div class="timeline-name">
-              Main Task Period
-            </div>
-
-            <div
-              class="timeline-time"
-              id="taskPeriod"
-            >
-              -
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- ADHOC -->
-        <div
-          class="timeline-item"
-          id="adhocTimeline"
-        >
-
-          <div class="timeline-icon">
-            ⚡
-          </div>
-
-          <div class="timeline-info">
-
-            <div class="timeline-name">
-              Adhoc Task Period
-            </div>
-
-            <div
-              class="timeline-time"
-              id="adhocPeriod"
-            >
-              -
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- PEER REVIEW -->
-        <div class="timeline-item">
-
-          <div class="timeline-icon">
-            🔍
-          </div>
-
-          <div class="timeline-info">
-
-            <div class="timeline-name">
-              Peer Review Period
-            </div>
-
-            <div
-              class="timeline-time"
-              id="reviewPeriod"
-            >
-              -
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- MEETING -->
-        <div
-          class="timeline-item"
-          id="meetingTimeline"
-        >
-
-          <div class="timeline-icon">
-            👥
-          </div>
-
-          <div class="timeline-info">
-
-            <div class="timeline-name">
-              Meeting
-            </div>
-
-            <div
-              class="timeline-time"
-              id="meetingPeriod"
-            >
-              -
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- BREAK -->
-        <div class="timeline-item">
-
-          <div class="timeline-icon">
-            ☕
-          </div>
-
-          <div class="timeline-info">
-
-            <div class="timeline-name">
-              Break
-            </div>
-
-            <div
-              class="timeline-time"
-              id="breakPeriod"
-            >
-              -
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- END -->
-        <div class="timeline-item">
-
-          <div class="timeline-icon">
-            🏁
-          </div>
-
-          <div class="timeline-info">
-
-            <div class="timeline-name">
-              Work Day Ends
-            </div>
-
-            <div
-              class="timeline-time"
-              id="workEnd"
-            >
-              -
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="footer">
-      Task Performance Calculator
     </div>
 
   </div>
+</div>
 
+<div class="footer">Task Performance Calculator</div>
 
-  <script src="script.js"></script>
+<script>
+function systemPrefersDark() {
+  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function updateThemeIcon(theme) {
+  const sun = document.getElementById("iconSun");
+  const moon = document.getElementById("iconMoon");
+  if (!sun || !moon) return;
+  const isDark = theme === "dark" || (theme === null && systemPrefersDark());
+  sun.style.display = isDark ? "none" : "block";
+  moon.style.display = isDark ? "block" : "none";
+}
+
+function applyStoredTheme() {
+  let saved = null;
+  try {
+    saved = localStorage.getItem("theme");
+  } catch (e) {
+    console.warn("localStorage unavailable:", e);
+  }
+  if (saved === "dark" || saved === "light") {
+    document.documentElement.setAttribute("data-theme", saved);
+  }
+  updateThemeIcon(saved);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") ||
+    (systemPrefersDark() ? "dark" : "light");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  updateThemeIcon(next);
+  try {
+    localStorage.setItem("theme", next);
+  } catch (e) {
+    console.warn("localStorage unavailable:", e);
+  }
+}
+
+applyStoredTheme();
+
+window.addEventListener("DOMContentLoaded", function () {
+  try {
+    const savedBreakTime = localStorage.getItem("breakTime");
+    if (savedBreakTime !== null) {
+      document.getElementById("breakHours").value = savedBreakTime;
+    }
+    const savedEndTime = localStorage.getItem("endTime");
+    if (savedEndTime !== null) {
+      document.getElementById("endTime").value = savedEndTime;
+    }
+  } catch (e) {
+    console.warn("localStorage unavailable:", e);
+  }
+});
+
+function resetForm() {
+  document.getElementById("totalTasks").value = "";
+  document.getElementById("completedTasks").value = "";
+  document.getElementById("adhocTasks").value = "0";
+  document.getElementById("meetingMinutes").value = "0";
+  document.getElementById("results").classList.remove("show");
+}
+
+function formatDuration(decimalHours) {
+  let hours = Math.floor(decimalHours);
+  let minutes = Math.round((decimalHours - hours) * 60);
+  if (minutes === 60) { hours++; minutes = 0; }
+  return `${hours}h ${minutes}m`;
+}
+
+function formatTime(totalMinutes) {
+  totalMinutes = totalMinutes % (24 * 60);
+  let hours = Math.floor(totalMinutes / 60);
+  let minutes = Math.round(totalMinutes % 60);
+  let period = hours >= 12 ? "PM" : "AM";
+  let displayHours = hours % 12;
+  if (displayHours === 0) { displayHours = 12; }
+  return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
+}
+
+function timeToMinutes(time) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return (hours * 60) + minutes;
+}
+
+function calculate() {
+  const totalTasks = Number(document.getElementById("totalTasks").value);
+  const completedTasks = Number(document.getElementById("completedTasks").value);
+  const adhocTasks = Number(document.getElementById("adhocTasks").value);
+  const breakHours = Number(document.getElementById("breakHours").value);
+  const meetingMinutes = Number(document.getElementById("meetingMinutes").value);
+  const startTime = document.getElementById("startTime").value;
+  const endTime = document.getElementById("endTime").value;
+
+  if (
+    totalTasks <= 0 || completedTasks < 0 || adhocTasks < 0 ||
+    breakHours < 0 || meetingMinutes < 0 || !startTime || !endTime
+  ) {
+    alert("Please enter all required information.");
+    return;
+  }
+
+  const usedTasks = completedTasks + adhocTasks;
+  if (usedTasks > totalTasks) {
+    alert("Main Tasks + Adhoc Tasks cannot be greater than Total Tasks.");
+    return;
+  }
+
+  const peerReviewTasks = totalTasks - completedTasks - adhocTasks;
+
+  let startTotalMinutes = timeToMinutes(startTime);
+  let endTotalMinutes = timeToMinutes(endTime);
+  if (endTotalMinutes <= startTotalMinutes) { endTotalMinutes += 24 * 60; }
+
+  const totalDayMinutes = endTotalMinutes - startTotalMinutes;
+  const breakMinutes = breakHours * 60;
+  const productiveMinutes = totalDayMinutes - breakMinutes - meetingMinutes;
+
+  if (productiveMinutes <= 0) {
+    alert("Break time + Meeting time cannot be greater than the total work period.");
+    return;
+  }
+
+  const totalTimeHours = productiveMinutes / 60;
+  const tasksPerHour = totalTasks / totalTimeHours;
+  const completedTimeHours = completedTasks / tasksPerHour;
+  const adhocTimeHours = adhocTasks / tasksPerHour;
+  const peerReviewTimeHours = peerReviewTasks / tasksPerHour;
+
+  try {
+    localStorage.setItem("breakTime", breakHours);
+    localStorage.setItem("endTime", endTime);
+  } catch (e) {
+    console.warn("localStorage unavailable:", e);
+  }
+
+  const taskDurationMinutes = completedTimeHours * 60;
+  const taskStartMinutes = startTotalMinutes;
+  const taskEndMinutes = taskStartMinutes + taskDurationMinutes;
+
+  const adhocStartMinutes = taskEndMinutes;
+  const adhocDurationMinutes = adhocTimeHours * 60;
+  const adhocEndMinutes = adhocStartMinutes + adhocDurationMinutes;
+
+  const reviewStartMinutes = adhocEndMinutes;
+  const reviewDurationMinutes = peerReviewTimeHours * 60;
+  const reviewEndMinutes = reviewStartMinutes + reviewDurationMinutes;
+
+  const meetingStartTimeline = reviewEndMinutes;
+  const meetingEndTimeline = meetingStartTimeline + meetingMinutes;
+
+  const breakStartMinutes = meetingEndTimeline;
+  const breakEndMinutes = breakStartMinutes + breakMinutes;
+
+  document.getElementById("tasksPerHour").textContent = tasksPerHour.toFixed(2);
+  document.getElementById("completedResult").textContent = completedTasks;
+  document.getElementById("peerReviewTasks").textContent = peerReviewTasks;
+  document.getElementById("completedTime").textContent = formatDuration(completedTimeHours);
+  document.getElementById("peerReviewTime").textContent = formatDuration(peerReviewTimeHours);
+  document.getElementById("breakTimeResult").textContent = formatDuration(breakHours);
+  document.getElementById("totalTime").textContent = formatDuration(totalTimeHours);
+  document.getElementById("totalDayTime").textContent = formatDuration(totalDayMinutes / 60);
+
+  const adhocResultCard = document.getElementById("adhocResultCard");
+  const adhocTimeCard = document.getElementById("adhocTimeCard");
+  const adhocTimeline = document.getElementById("adhocTimeline");
+
+  if (adhocTasks > 0) {
+    adhocResultCard.style.display = "grid";
+    adhocTimeCard.style.display = "grid";
+    adhocTimeline.style.display = "grid";
+    document.getElementById("adhocResult").textContent = adhocTasks;
+    document.getElementById("adhocTime").textContent = formatDuration(adhocTimeHours);
+  } else {
+    adhocResultCard.style.display = "none";
+    adhocTimeCard.style.display = "none";
+    adhocTimeline.style.display = "none";
+  }
+
+  const meetingResultCard = document.getElementById("meetingResultCard");
+  const meetingTimeline = document.getElementById("meetingTimeline");
+
+  if (meetingMinutes > 0) {
+    meetingResultCard.style.display = "grid";
+    meetingTimeline.style.display = "grid";
+    document.getElementById("meetingTimeResult").textContent = formatDuration(meetingMinutes / 60);
+    document.getElementById("meetingPeriod").textContent =
+      `${formatTime(meetingStartTimeline)} → ${formatTime(meetingEndTimeline)}`;
+  } else {
+    meetingResultCard.style.display = "none";
+    meetingTimeline.style.display = "none";
+  }
+
+  document.getElementById("workStart").textContent = formatTime(startTotalMinutes);
+  document.getElementById("taskPeriod").textContent =
+    `${formatTime(taskStartMinutes)} → ${formatTime(taskEndMinutes)}`;
+
+  if (adhocTasks > 0) {
+    document.getElementById("adhocPeriod").textContent =
+      `${formatTime(adhocStartMinutes)} → ${formatTime(adhocEndMinutes)}`;
+  }
+
+  document.getElementById("reviewPeriod").textContent =
+    `${formatTime(reviewStartMinutes)} → ${formatTime(reviewEndMinutes)}`;
+  document.getElementById("breakPeriod").textContent =
+    `${formatTime(breakStartMinutes)} → ${formatTime(breakEndMinutes)}`;
+  document.getElementById("workEnd").textContent = formatTime(endTotalMinutes);
+
+  const barValues = {
+    Task: taskDurationMinutes,
+    Adhoc: adhocTasks > 0 ? adhocDurationMinutes : 0,
+    Review: reviewDurationMinutes,
+    Meeting: meetingMinutes > 0 ? meetingMinutes : 0,
+    Break: breakMinutes
+  };
+
+  Object.entries(barValues).forEach(([key, val]) => {
+    const el = document.getElementById("bar" + key);
+    if (el) {
+      el.style.width = totalDayMinutes > 0 ? (val / totalDayMinutes * 100) + "%" : "0%";
+    }
+  });
+
+  document.getElementById("results").classList.add("show");
+  document.getElementById("results").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+</script>
 
 </body>
-
 </html>
-
